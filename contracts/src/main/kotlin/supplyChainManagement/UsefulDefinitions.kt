@@ -13,18 +13,25 @@ data class Location (
 )
 
 @CordaSerializable
-data class TimeDate (               // 24 HOUR FORMAT :
-    val hrs         :Int,           // Hours
-    val min         :Int,           // Minutes
-    val day         :Int,           // Day -> by date -> 1, 2, 3, 4, .....
-    val mon         :String,        // Month -> by name -> Jan, Feb, .....
-    val year        :Int            // Year -> 4 digit number -> 2020, ...
-)
-
-@CordaSerializable
 data class ProductData (
     val id          :String,        // Product ID
     val name        :String,        // Product Name
     val qty         :Double,        // Quantity of Product -> Unit Agnostic
     val units       :String         // Units in which _qty_ is measured
 )
+
+val validUnits = arrayOf(
+    "lb",       // pounds
+    "kg",       // kilograms
+    "oz",       // ounces
+    "no"        // number -> if you sold '10' boxes, it will have 'no' as the unit
+)
+
+fun isValidUnit (u :String) : Boolean {
+    for (unit in validUnits) {
+        if (u == unit) {
+            return true
+        }
+    }
+    return false
+}
