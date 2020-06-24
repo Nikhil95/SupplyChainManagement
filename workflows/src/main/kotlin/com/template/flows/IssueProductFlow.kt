@@ -18,39 +18,45 @@ import java.util.Collections.singletonList
 @StartableByRPC
 class IssueProductFlow (
 
-    private val manufacturer            : Party,
-    private val id                      : String,
-    private val name                    : String,
-    private val qty                     : Double,
-    private val units                   : String,
-    private val address                 : String,
-    private val posCode                 : Int,
-    private val city                    : String,
-    private val state                   : String,
-    private val country                 : String
+    private val receiver                    : Party,
+    private val id                          : String,
+    private val name                        : String,
+    private val qty                         : Double,
+    private val units                       : String,
+    private val s_address                   : String,
+    private val s_posCode                   : Int,
+    private val s_city                      : String,
+    private val s_state                     : String,
+    private val s_country                   : String,
+    private val r_address                   : String,
+    private val r_posCode                   : Int,
+    private val r_city                      : String,
+    private val r_state                     : String,
+    private val r_country                   : String
 
 ) : FlowLogic<SignedTransaction>() {
     override val progressTracker = ProgressTracker()
 
     @Suspendable
     override fun call() : SignedTransaction {
-        val     extTimeDate     = LocalDateTime.now()
-        val     materialData    = ProductData(id, name, qty, units)
-        val     notary          = serviceHub.networkMapCache.notaryIdentities[0]
-        val     inputsFrom      = ourIdentity
+        val     sentOnTimeDate   = LocalDateTime.now()
+        val     sentMaterialData = ProductData(id, name, qty, units)
+        val     notary           = serviceHub.networkMapCache.notaryIdentities[0]
+        val     sender           = ourIdentity
 
-        val     extLocation     = Location(address, posCode, city, state, country)
-        val     pstate          = ProductState(inputsFrom, manufacturer, materialData, extLocation, extTimeDate)
+        val     sentFromLocation = Location(s_address, s_posCode, s_city, s_state, s_country)
+        val     sentToLocation   = Location(r_address, r_posCode, r_city, r_state, r_country)
+        val     pstate           = ProductState(sender, receiver, sentMaterialData, sentFromLocation, sentToLocation, sentOnTimeDate)
 
-        val     command         = ProductContract.Commands.IssueIP()
-        val     tb              = TransactionBuilder(notary)
+        val     command          = ProductContract.Commands.IssueIP()
+        val     tb               = TransactionBuilder(notary)
 
         tb.addOutputState   (pstate, ProductContract.ID)
-        tb.addCommand       (command, inputsFrom.owningKey, manufacturer.owningKey)
+        tb.addCommand       (command, sender.owningKey, receiver.owningKey)
 
         tb.verify(serviceHub)
 
-        val     sesh            = initiateFlow(manufacturer)
+        val     sesh            = initiateFlow(receiver)
         val     stx             = serviceHub.signInitialTransaction((tb))
         val     ftx             = subFlow(CollectSignaturesFlow(stx, singletonList(sesh)))
 
