@@ -12,13 +12,14 @@ import java.time.LocalDateTime
 @BelongsToContract(ProductContract::class)
 data class ProductState (
 
-    val inputsFrom          : Party,                // Who supplied the raw materials to the manufacturer ?
-    val manufacturer        : Party,                // Who manufactured said product ?
-    val materialData        : ProductData,          // What product was manufactured ?
-    val ext_location        : Location,             // Where was the product manufactured ?
-    val extTimeDate         : LocalDateTime,        // When was the product manufactured ?
+    val sender              : Party,                // Who sent the material ?
+    val receiver            : Party,                // Who was the material sent to ?
+    val sentMaterialData    : ProductData,          // What product was sent ?
+    val sentFromLocation    : Location,             // Where was the product sent from ?
+    val sentToLocation      : Location,             // Where was the product sent to ?
+    val sentOnTimeDate      : LocalDateTime,        // When was the product extracted / manufactured ?
     override val linearId   : UniqueIdentifier = UniqueIdentifier()
 
 ) : LinearState {
-    override val participants: List<Party> get() = listOf(inputsFrom, manufacturer)
+    override val participants: List<Party> get() = listOf(sender, receiver)
 }
